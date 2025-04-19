@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 from enum import StrEnum
+from os import path
 
 from utils import logger
 
@@ -58,7 +59,9 @@ if __name__ == "__main__":
     if args.verbose:
         logger.log_level = logger.Level.DEBUG
 
+    target_dir = path.abspath(args.target)
+
     # Do the thing
 
-    logger.info(f"TODO: download to {args.target}")
+    logger.info(f"TODO: download to {target_dir}")
     logger.info(f"include={resources}")
