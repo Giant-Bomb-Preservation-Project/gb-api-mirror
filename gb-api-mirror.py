@@ -5,6 +5,9 @@ import os
 
 from utils import logger
 
+# Subdir to store the images
+IMAGE_DIR = "images"
+
 
 class Resource(StrEnum):
     VIDEO_SHOWS = "video_shows"
@@ -12,6 +15,18 @@ class Resource(StrEnum):
 
 def _download_data(resource: Resource) -> list:
     """Download data for the given resource, returning the results."""
+    # TODO
+    return []
+
+
+def _download_images(images: list[str], target_dir: str, skip_existing: bool) -> int:
+    """Download a list of images to the target dir, returning how many were downloaded."""
+    # TODO
+    return 0
+
+
+def _extract_images(resource: Resource, data: list) -> list[str]:
+    """Extract out all the images from the given resource."""
     # TODO
     return []
 
@@ -86,3 +101,11 @@ if __name__ == "__main__":
             logger.debug(f"Writing data to: {target_file}")
             json.dump(data, f, ensure_ascii=False, indent=4)
         logger.info(f"Saved {len(data)} items")
+
+        if args.images:
+            images = _extract_images(resource, data)
+            logger.info(f"Downloading {len(images)} images...")
+            count = _download_images(
+                images, os.path.join(target_dir, IMAGE_DIR), args.skip_existing
+            )
+            logger.info(f"Saved {count} images ({len(images) - count} skipped)")
