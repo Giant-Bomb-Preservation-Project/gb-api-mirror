@@ -61,6 +61,12 @@ if __name__ == "__main__":
         "-v", "--verbose", help="show verbose output", action="store_true"
     )
 
+    # Get API key
+
+    if "GB_API_KEY" not in os.environ:
+        logger.fatal("Missing environment variable: GB_API_KEY")
+    api_key = os.environ["GB_API_KEY"]
+
     # Parse arguments
 
     args = parser.parse_args()
