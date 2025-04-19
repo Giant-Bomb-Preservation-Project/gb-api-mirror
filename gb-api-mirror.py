@@ -122,13 +122,22 @@ if __name__ == "__main__":
 
         logger.info(f"Downloading {resource.value}...")
         data = _download_data(resource, api_key, args.delay)
+        if len(data) == 0:
+            logger.warn(f"Got 0 results for: {resource.value}")
+            continue
+
         with open(target_file, "w", encoding="utf-8") as f:
             logger.debug(f"Writing data to: {target_file}")
             json.dump(data, f, ensure_ascii=False, indent=4)
+
         logger.info(f"Saved {len(data)} items")
 
         if args.images:
             images = _extract_images(resource, data)
+            if len(images) == 0:
+                logger.warn(f"Got 0 images for: {resource.value}")
+                continue
+
             logger.info(f"Downloading {len(images)} images...")
             count = _download_images(
                 images, os.path.join(target_dir, IMAGE_DIR), args.skip_existing
