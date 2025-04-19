@@ -67,3 +67,10 @@ if __name__ == "__main__":
         logger.debug(f"Creating directory: {target_dir}")
         os.makedirs(target_dir)
 
+    for resource in resources:
+        target_file = os.path.join(target_dir, resource.value + ".json")
+        if os.path.isfile(target_file) and args.skip_existing:
+            logger.info(f"Skipping existing resource: {resource}")
+            continue
+
+        print(target_file)
