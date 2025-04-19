@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 from enum import StrEnum
+import json
 import os
 
 from utils import logger
@@ -7,6 +8,12 @@ from utils import logger
 
 class Resource(StrEnum):
     VIDEO_SHOWS = "video_shows"
+
+
+def _download_data(resource: Resource) -> list:
+    """Download data for the given resource, returning the results."""
+    # TODO
+    return []
 
 
 if __name__ == "__main__":
@@ -73,4 +80,9 @@ if __name__ == "__main__":
             logger.info(f"Skipping existing resource: {resource}")
             continue
 
-        print(target_file)
+        logger.info(f"Downloading {resource.value}...")
+        data = _download_data(resource)
+        with open(target_file, "w", encoding="utf-8") as f:
+            logger.debug(f"Writing data to: {target_file}")
+            json.dump(data, f, ensure_ascii=False, indent=4)
+        logger.info(f"Saved {len(data)} items")
