@@ -15,19 +15,19 @@ class Resource(StrEnum):
 
 def _download_data(resource: Resource) -> list:
     """Download data for the given resource, returning the results."""
-    # TODO
+    logger.warn("TODO")
     return []
 
 
 def _download_images(images: list[str], target_dir: str, skip_existing: bool) -> int:
     """Download a list of images to the target dir, returning how many were downloaded."""
-    # TODO
+    logger.warn("TODO")
     return 0
 
 
 def _extract_images(resource: Resource, data: list) -> list[str]:
     """Extract out all the images from the given resource."""
-    # TODO
+    logger.warn("TODO")
     return []
 
 
