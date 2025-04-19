@@ -1,4 +1,12 @@
 from argparse import ArgumentParser
+from enum import StrEnum
+
+from utils import logger
+
+
+class Resource(StrEnum):
+    VIDEO_SHOWS = "video_shows"
+
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="Downloads data from the Giant Bomb API")
@@ -32,5 +40,14 @@ if __name__ == "__main__":
 
     # Validate arguments
     args = parser.parse_args()
+    resources: list[Resource] = []
+    if args.include:
+        for res in args.include.lower().split(","):
+            if res not in Resource:
+                logger.fatal(f"Unsupported resource: {res}")
+            resources.append(Resource[res.upper()])
+    else:
+        resources = [r for r in Resource]
 
-    print(f"TODO: download to {args.target}")
+    logger.info(f"TODO: download to {args.target}")
+    logger.info(f"include={resources}")
