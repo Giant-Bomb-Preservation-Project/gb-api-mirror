@@ -37,7 +37,11 @@ python gb-api-mirror.py <path to save files>
 
 ### Options
 
-TODO
+* `--images` Also download the images
+* `--include` Comma-separated list of the resources to download (defaults to all)
+* `--quiet` Suppress all output (except errors)
+* `--skip-existing` Skip over resources which have already been downloaded
+* `--verbose` Show verbose output
 
 ## Development
 
