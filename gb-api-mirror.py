@@ -10,12 +10,19 @@ IMAGE_DIR = "images"
 
 
 class Resource(StrEnum):
+    VIDEO_CATEGORIES = "video_categories"
     VIDEO_SHOWS = "video_shows"
 
 
 def _download_data(resource: Resource, api_key: str, delay: int) -> list:
     """Download data for the given resource, returning the results."""
-    if resource == Resource.VIDEO_SHOWS:
+    regular_resources = [
+        # resources that just use the regular offset paged API
+        Resource.VIDEO_CATEGORIES,
+        Resource.VIDEO_SHOWS,
+    ]
+
+    if resource in regular_resources:
         return api.get_paged_resource(resource.value, api_key, delay)
     else:
         logger.error(f"Unhandled resource: {resource}")
