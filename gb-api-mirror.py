@@ -13,7 +13,7 @@ class Resource(StrEnum):
     VIDEO_SHOWS = "video_shows"
 
 
-def _download_data(resource: Resource) -> list:
+def _download_data(resource: Resource, api_key: str, delay: int) -> list:
     """Download data for the given resource, returning the results."""
     logger.warn("TODO")
     return []
@@ -41,6 +41,14 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "-d",
+        "--delay",
+        type=int,
+        default=18,  # 200 requests per hour
+        metavar="SECONDS",
+        help="time to delay between requests (default: 18)",
+    )
+    parser.add_argument(
+        "-f",
         "--images",
         help="download images alongside metadata",
         action="store_true",
@@ -48,7 +56,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "-i",
         "--include",
-        help="which resources to include",
+        metavar="RESOURCES",
+        help="which resources to include (defaults to all)",
     )
     parser.add_argument("-q", "--quiet", help="prevent all output", action="store_true")
     parser.add_argument(
@@ -102,7 +111,7 @@ if __name__ == "__main__":
             continue
 
         logger.info(f"Downloading {resource.value}...")
-        data = _download_data(resource)
+        data = _download_data(resource, api_key, args.delay)
         with open(target_file, "w", encoding="utf-8") as f:
             logger.debug(f"Writing data to: {target_file}")
             json.dump(data, f, ensure_ascii=False, indent=4)
