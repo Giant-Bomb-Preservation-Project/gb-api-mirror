@@ -38,8 +38,10 @@ if __name__ == "__main__":
         "-v", "--verbose", help="show verbose output", action="store_true"
     )
 
-    # Validate arguments
+    # Parse arguments
+
     args = parser.parse_args()
+
     resources: list[Resource] = []
     if args.include:
         for res in args.include.lower().split(","):
@@ -48,6 +50,15 @@ if __name__ == "__main__":
             resources.append(Resource[res.upper()])
     else:
         resources = [r for r in Resource]
+
+    if args.quiet and args.verbose:
+        logger.fatal("Unable to be both quiet and verbose at the same time :(")
+    if args.quiet:
+        logger.log_level = logger.Level.ERROR
+    if args.verbose:
+        logger.log_level = logger.Level.DEBUG
+
+    # Do the thing
 
     logger.info(f"TODO: download to {args.target}")
     logger.info(f"include={resources}")
