@@ -19,6 +19,14 @@ HEADERS = {
 # Delay between fetching images (to avoid overloading the API)
 IMAGE_DELAY = 0.5
 
+# Mapping from one URL to another (where there is an error)
+IMAGE_URL_MAPPING = {
+    "https://static.giantbomb.com/": "https://www.giantbomb.com/a/",
+    "https://giantbomb1.cbsistatic.com/": "https://www.giantbomb.com/a/",
+    "https://www.giantbomb.com/a/uploads/scale_super/": "https://www.giantbomb.com/a/uploads/original/",
+    "https://giantbomb.com/a/uploads/scale_super/": "https://www.giantbomb.com/a/uploads/original/",
+}
+
 # Valid prefixes for downloading images (any others will be skipped)
 IMAGE_URL_PREFIXES = [
     "https://www.giantbomb.com/a/uploads/original/",
@@ -79,6 +87,9 @@ def download_images(
     skipped = 0
     errors = 0
     for url in images:
+        for find, replace in IMAGE_URL_MAPPING.items():
+            url = url.replace(find, replace)
+
         image_url_prefix = None
         for prefix in IMAGE_URL_PREFIXES:
             if url.startswith(prefix):
