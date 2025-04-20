@@ -117,6 +117,35 @@ def download_images(
     return downloaded
 
 
+def get_individualized_resource(
+    resource: str, max_count: int, api_key: str, delay: int
+) -> list:
+    """Get a resource that needs to be fetched one entry at a time."""
+    base_url = f"{BASE_URL}/{resource}"
+    params = {
+        "api_key": api_key,
+        "format": "json",
+    }
+
+    results = []
+    num = 1
+    while True:
+        url = f"{base_url}/{num}/"
+        data = _get(url, params=params, headers=HEADERS)
+
+        if not data["results"]:
+            continue
+
+        results.append(data["results"])
+        num += 1
+        if num > max_count:
+            break
+
+        sleep(delay)
+
+    return results
+
+
 def get_paged_resource(resource: str, api_key: str, delay: int) -> list:
     """Get a resource that's paged with limit/offset parameters."""
     url = f"{BASE_URL}/{resource}/"
