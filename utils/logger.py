@@ -1,7 +1,27 @@
 from enum import Enum
 import sys
 
-from termcolor import cprint
+
+# Copied from https://github.com/termcolor/termcolor
+COLORS: dict[str, int] = {
+    "black": 30,
+    "grey": 30,
+    "red": 31,
+    "green": 32,
+    "yellow": 33,
+    "blue": 34,
+    "magenta": 35,
+    "cyan": 36,
+    "light_grey": 37,
+    "dark_grey": 90,
+    "light_red": 91,
+    "light_green": 92,
+    "light_yellow": 93,
+    "light_blue": 94,
+    "light_magenta": 95,
+    "light_cyan": 96,
+    "white": 97,
+}
 
 
 class Level(Enum):
@@ -20,50 +40,58 @@ class Level(Enum):
 log_level: Level = Level.INFO
 
 
-def debug(message: str, end: str = "\n"):
+def _colorize(message: object, color: str) -> str:
+    """Add color to a message."""
+    if color not in COLORS:
+        return str(message)
+
+    return "\033[{}m{}\033[0m".format(COLORS[color], str(message))
+
+
+def debug(message: object):
     """Log a debug message."""
     if log_level < Level.DEBUG:
         return
 
-    cprint(message, "dark_grey", end=end)
+    print(_colorize(message, "dark_grey"))
 
 
-def error(message: str, end: str = "\n"):
+def error(message: object):
     """Log an error message."""
     if log_level < Level.ERROR:
         return
 
-    cprint(message, "red", end=end, file=sys.stderr)
+    print(_colorize(message, "red"), file=sys.stderr)
 
 
-def fatal(message: str, end: str = "\n"):
+def fatal(message: object):
     """Log an error message and then exit erroneously."""
     if log_level < Level.ERROR:
         return
 
-    cprint(message, "red", end=end, file=sys.stderr)
+    print(_colorize(message, "red"), file=sys.stderr)
     exit(1)
 
 
-def info(message: str, end: str = "\n"):
+def info(message: object):
     """Log a regular message."""
     if log_level < Level.INFO:
         return
 
-    print(message, end=end)
+    print(message)
 
 
-def success(message: str, end: str = "\n"):
+def success(message: object):
     """Log a success message."""
     if log_level < Level.INFO:
         return
 
-    cprint(message, "green", end=end)
+    print(_colorize(message, "green"))
 
 
-def warn(message: str, end: str = "\n"):
+def warn(message: object):
     """Log a warning message."""
     if log_level < Level.WARNING:
         return
 
-    cprint(message, "yellow", end=end)
+    print(_colorize(message, "yellow"))
