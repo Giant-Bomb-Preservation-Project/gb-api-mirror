@@ -69,6 +69,12 @@ if __name__ == "__main__":
         metavar="RESOURCES",
         help="which resources to include (defaults to all)",
     )
+    parser.add_argument(
+        "-o",
+        "--overwrite-images",
+        help="overwrite existing images",
+        action="store_true",
+    )
     parser.add_argument("-q", "--quiet", help="prevent all output", action="store_true")
     parser.add_argument(
         "-s",
