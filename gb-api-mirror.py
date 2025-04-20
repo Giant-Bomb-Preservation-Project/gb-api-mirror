@@ -20,9 +20,9 @@ if __name__ == "__main__":
         "-d",
         "--delay",
         type=int,
-        default=18,  # 200 requests per hour
+        default=20,  # ~200 requests per hour
         metavar="SECONDS",
-        help="time to delay between requests (default: 18)",
+        help="time to delay between requests (default: 20)",
     )
     parser.add_argument(
         "-f",
