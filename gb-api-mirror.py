@@ -110,7 +110,7 @@ if __name__ == "__main__":
                 continue
 
             logger.info(f"Downloading {len(images)} images...")
-            count = api.download_images(
+            downloaded, skipped, errors = api.download_images(
                 images, os.path.join(target_dir, IMAGE_DIR), args.overwrite_images
             )
-            logger.success(f"Saved {count} images ({len(images) - count} skipped)")
+            logger.success(f"Saved {downloaded} images ({skipped} skipped, {errors} errors)")

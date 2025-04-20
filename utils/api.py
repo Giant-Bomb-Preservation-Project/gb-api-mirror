@@ -74,8 +74,10 @@ def _get(url: str, params: dict | None = None, headers: dict | None = None) -> d
 def download_images(
     images: list[str], target_dir: str, overwrite_existing: bool
 ) -> int:
-    """Download a list of images to the target dir, returning how many were downloaded."""
+    """Download a list of images to the target dir, returning how many were downloaded, skipped, and errored."""
     downloaded = 0
+    skipped = 0
+    errors = 0
     for url in images:
         image_url_prefix = None
         for prefix in IMAGE_URL_PREFIXES:
@@ -100,6 +102,7 @@ def download_images(
 
         if not overwrite_existing and os.path.isfile(target_file):
             logger.debug(f"Skipping existing image: {target_file}")
+            skipped += 1
             continue
 
         logger.debug(f"Downloading: {url}")
@@ -113,8 +116,9 @@ def download_images(
             sleep(IMAGE_DELAY)
         except Exception as err:
             logger.error(f"Error when downloading file: {str(err)}")
+            errors += 1
 
-    return downloaded
+    return downloaded, skipped, errors
 
 
 def get_individualized_resource(
