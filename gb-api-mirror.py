@@ -3,7 +3,7 @@ from enum import StrEnum
 import json
 import os
 
-from utils import api, logger
+from utils import api, logger, file
 
 # Subdir to store the images
 IMAGE_DIR = "images"
@@ -126,9 +126,7 @@ if __name__ == "__main__":
             logger.warn(f"Got 0 results for: {resource.value}")
             continue
 
-        with open(target_file, "w", encoding="utf-8") as f:
-            logger.debug(f"Writing data to: {target_file}")
-            json.dump(data, f, ensure_ascii=False, indent=4)
+        file.save_json_file(data, target_file)
 
         logger.info(f"Saved {len(data)} items")
 
