@@ -1,14 +1,13 @@
 from enum import StrEnum
 import re
 
+from bs4 import BeautifulSoup
+
 from utils import api, logger
 
 
 # Which image size to download
 IMAGE_SIZE = "original_url"
-
-# Regex for finding the image source attribute
-IMAGE_SOURCE_RE = r"data-img-src=\"(.*?)\""
 
 
 def _extract_images_from_field(items: list, field: str) -> list[str]:
@@ -21,7 +20,12 @@ def _extract_images_from_text_field(items: list, field: str) -> list[str]:
     images = []
     for item in items:
         if field in item and item[field]:
-            images += re.findall(IMAGE_SOURCE_RE, item[field])
+            soup = BeautifulSoup(item[field], "html.parser")
+
+            figures = soup.select('figure[data-img-src]')
+
+            for figure in figures:
+                images.append(figure.get('data-img-src'))
 
     return images
 
