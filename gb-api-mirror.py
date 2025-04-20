@@ -8,6 +8,9 @@ from utils import api, logger, file
 # Subdir to store the images
 IMAGE_DIR = "images"
 
+# Which image size to download
+IMAGE_SIZE = "original_url"
+
 
 class Resource(StrEnum):
     VIDEO_CATEGORIES = "video_categories"
@@ -16,29 +19,37 @@ class Resource(StrEnum):
 
 def _download_data(resource: Resource, api_key: str, delay: int) -> list:
     """Download data for the given resource, returning the results."""
-    regular_resources = [
-        # resources that just use the regular offset paged API
-        Resource.VIDEO_CATEGORIES,
-        Resource.VIDEO_SHOWS,
-    ]
-
-    if resource in regular_resources:
+    if Resource.VIDEO_CATEGORIES:
+        return api.get_paged_resource(resource.value, api_key, delay)
+    elif resource == Resource.VIDEO_SHOWS:
         return api.get_paged_resource(resource.value, api_key, delay)
     else:
         logger.error(f"Unhandled resource: {resource}")
         return []
 
 
-def _download_images(images: list[str], target_dir: str, skip_existing: bool) -> int:
-    """Download a list of images to the target dir, returning how many were downloaded."""
-    logger.warn("TODO")
-    return 0
+def _extract_image_field(items: list, field: str) -> list[str]:
+    """Extract out the image field from a list of items."""
+    return [
+        item[field][IMAGE_SIZE]
+        for item in items
+        if field in item and item[field]
+    ]
 
 
 def _extract_images(resource: Resource, data: list) -> list[str]:
     """Extract out all the images from the given resource."""
-    logger.warn("TODO")
-    return []
+    images = []
+
+    if Resource.VIDEO_CATEGORIES:
+        images += _extract_image_field(data, "image")
+    elif resource == Resource.VIDEO_SHOWS:
+        images += _extract_image_field(data, "image")
+        images += _extract_image_field(data, "logo")
+    else:
+        logger.error(f"Unhandled resource: {resource}")
+
+    return list(set(images))  # remove duplicates
 
 
 if __name__ == "__main__":
@@ -133,17 +144,16 @@ if __name__ == "__main__":
             continue
 
         file.save_json_file(data, target_file)
-
-        logger.info(f"Saved {len(data)} items")
+        logger.success(f"Saved {len(data)} items")
 
         if args.images:
             images = _extract_images(resource, data)
             if len(images) == 0:
-                logger.warn(f"Got 0 images for: {resource.value}")
+                logger.warn(f"Got 0 images for {resource.value}")
                 continue
 
             logger.info(f"Downloading {len(images)} images...")
-            count = _download_images(
-                images, os.path.join(target_dir, IMAGE_DIR), args.skip_existing
+            count = api.download_images(
+                images, os.path.join(target_dir, IMAGE_DIR), args.overwrite_images
             )
-            logger.info(f"Saved {count} images ({len(images) - count} skipped)")
+            logger.success(f"Saved {count} images ({len(images) - count} skipped)")
