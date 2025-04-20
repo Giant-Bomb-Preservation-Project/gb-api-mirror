@@ -70,7 +70,9 @@ def _get(url: str, params: dict | None = None, headers: dict | None = None) -> d
     return {}
 
 
-def download_images(images: list[str], target_dir: str, overwrite_existing: bool) -> int:
+def download_images(
+    images: list[str], target_dir: str, overwrite_existing: bool
+) -> int:
     """Download a list of images to the target dir, returning how many were downloaded."""
     downloaded = 0
     for url in images:

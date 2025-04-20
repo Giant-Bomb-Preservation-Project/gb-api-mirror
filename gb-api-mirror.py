@@ -19,7 +19,7 @@ class Resource(StrEnum):
 
 def _download_data(resource: Resource, api_key: str, delay: int) -> list:
     """Download data for the given resource, returning the results."""
-    if Resource.VIDEO_CATEGORIES:
+    if resource == Resource.VIDEO_CATEGORIES:
         return api.get_paged_resource(resource.value, api_key, delay)
     elif resource == Resource.VIDEO_SHOWS:
         return api.get_paged_resource(resource.value, api_key, delay)
@@ -41,7 +41,7 @@ def _extract_images(resource: Resource, data: list) -> list[str]:
     """Extract out all the images from the given resource."""
     images = []
 
-    if Resource.VIDEO_CATEGORIES:
+    if resource == Resource.VIDEO_CATEGORIES:
         images += _extract_image_field(data, "image")
     elif resource == Resource.VIDEO_SHOWS:
         images += _extract_image_field(data, "image")
