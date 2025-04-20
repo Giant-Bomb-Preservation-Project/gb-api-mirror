@@ -148,10 +148,12 @@ def get_individualized_resource(
         url = f"{base_url}/{num}/"
         data = _get(url, params=params, headers=HEADERS)
 
-        if not data["results"]:
-            continue
+        if "error" in data and data["error"] != "OK":
+            logger.error(f"Received error for /{resource}/{num}: {data["error"]}")
 
-        results.append(data["results"])
+        if "results" in data and data["results"]:
+            results.append(data["results"])
+
         num += 1
         if num > max_count:
             break
