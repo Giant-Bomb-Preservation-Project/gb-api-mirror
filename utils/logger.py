@@ -25,6 +25,7 @@ COLORS: dict[str, int] = {
 
 
 class Level(Enum):
+    """Level of the logger."""
     NONE = 0
     ERROR = 1
     WARNING = 2
@@ -70,7 +71,7 @@ def fatal(message: object):
         return
 
     print(_colorize(message, "red"), file=sys.stderr)
-    exit(1)
+    sys.exit(1)
 
 
 def info(message: object):

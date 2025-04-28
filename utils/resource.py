@@ -1,5 +1,4 @@
 from enum import StrEnum
-import re
 
 from bs4 import BeautifulSoup
 
@@ -10,22 +9,21 @@ from utils import api, logger
 IMAGE_SIZE = "original_url"
 
 
-def _extract_images_from_field(items: list, field: str) -> list[str]:
+def _extract_images_from_field(items: list[dict], field: str) -> list[str]:
     """Extract out the image field from a list of items."""
     return [item[field][IMAGE_SIZE] for item in items if field in item and item[field]]
 
 
-def _extract_images_from_text_field(items: list, field: str) -> list[str]:
+def _extract_images_from_text_field(items: list[dict], field: str) -> list[str]:
     """Extract images from a text field from a list of items."""
     images = []
     for item in items:
         if field in item and item[field]:
             soup = BeautifulSoup(item[field], "html.parser")
-
-            figures = soup.select('figure[data-img-src]')
+            figures = soup.select("figure[data-img-src]")
 
             for figure in figures:
-                images.append(figure.get('data-img-src'))
+                images.append(str(figure.get("data-img-src")))
 
     return images
 
@@ -73,7 +71,7 @@ class Resource(StrEnum):
             images += _extract_images_from_field(data, "logo")
         elif self == Resource.VIDEOS:
             images = _extract_images_from_field(data, "image")
-            # extract the images from the video shows as well in case they didn't come through the API
+            # extract the images from the video shows as well if they didn't come through the API
             video_shows = [
                 video["video_show"]
                 for video in data

@@ -113,4 +113,6 @@ if __name__ == "__main__":
             downloaded, skipped, errors = api.download_images(
                 images, os.path.join(target_dir, IMAGE_DIR), args.overwrite_images
             )
-            logger.success(f"Saved {downloaded} images ({skipped} skipped, {errors} errors)")
+            logger.success(
+                f"Saved {downloaded} images ({skipped} skipped, {errors} errors)"
+            )

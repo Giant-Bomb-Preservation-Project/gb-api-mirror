@@ -81,7 +81,7 @@ def _get(url: str, params: dict | None = None, headers: dict | None = None) -> d
 
 def download_images(
     images: list[str], target_dir: str, overwrite_existing: bool
-) -> int:
+) -> tuple[int, int, int]:
     """Download a list of images to the target dir, returning how many were downloaded, skipped, and errored."""
     downloaded = 0
     skipped = 0
