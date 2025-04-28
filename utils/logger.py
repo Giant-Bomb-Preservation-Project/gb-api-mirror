@@ -26,6 +26,7 @@ COLORS: dict[str, int] = {
 
 class Level(Enum):
     """Level of the logger."""
+
     NONE = 0
     ERROR = 1
     WARNING = 2
