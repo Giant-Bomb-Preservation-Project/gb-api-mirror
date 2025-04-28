@@ -32,6 +32,7 @@ class Resource(StrEnum):
     """A resource that is downloadable from the GB API."""
 
     ACCESSORIES = "accessories"
+    CHARACTERS = "characters"
     COMPANIES = "companies"
     REVIEWS = "reviews"
     USER_REVIEWS = "user_reviews"
@@ -44,6 +45,8 @@ class Resource(StrEnum):
         data = []
 
         if self == Resource.ACCESSORIES:
+            data = api.get_paged_resource(self.value, api_key, delay)
+        elif self == Resource.CHARACTERS:
             data = api.get_paged_resource(self.value, api_key, delay)
         elif self == Resource.COMPANIES:
             data = api.get_paged_resource(self.value, api_key, delay)
@@ -67,6 +70,9 @@ class Resource(StrEnum):
         images = []
 
         if self == Resource.ACCESSORIES:
+            images = _extract_images_from_field(data, "image")
+            images += _extract_images_from_text_field(data, "description")
+        elif self == Resource.CHARACTERS:
             images = _extract_images_from_field(data, "image")
             images += _extract_images_from_text_field(data, "description")
         elif self == Resource.COMPANIES:
