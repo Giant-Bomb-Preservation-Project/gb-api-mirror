@@ -31,6 +31,7 @@ def _extract_images_from_text_field(items: list[dict], field: str) -> list[str]:
 class Resource(StrEnum):
     """A resource that is downloadable from the GB API."""
 
+    COMPANIES = "companies"
     REVIEWS = "reviews"
     USER_REVIEWS = "user_reviews"
     VIDEO_CATEGORIES = "video_categories"
@@ -41,7 +42,9 @@ class Resource(StrEnum):
         """Download data for this resource."""
         data = []
 
-        if self == Resource.REVIEWS:
+        if self == Resource.COMPANIES:
+            data = api.get_paged_resource(self.value, api_key, delay)
+        elif self == Resource.REVIEWS:
             data = api.get_individualized_resource("review", 1000, api_key, delay)
         elif self == Resource.USER_REVIEWS:
             data = api.get_paged_resource(self.value, api_key, delay)
@@ -60,7 +63,10 @@ class Resource(StrEnum):
         """Extract out all the images from the given resource."""
         images = []
 
-        if self == Resource.REVIEWS:
+        if self == Resource.COMPANIES:
+            images = _extract_images_from_field(data, "image")
+            images += _extract_images_from_text_field(data, "description")
+        elif self == Resource.REVIEWS:
             images = _extract_images_from_text_field(data, "description")
         elif self == Resource.USER_REVIEWS:
             images = _extract_images_from_text_field(data, "description")
