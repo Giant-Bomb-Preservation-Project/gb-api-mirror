@@ -34,6 +34,7 @@ class Resource(StrEnum):
     ACCESSORIES = "accessories"
     CHARACTERS = "characters"
     COMPANIES = "companies"
+    FRANCHISES = "franchises"
     REVIEWS = "reviews"
     USER_REVIEWS = "user_reviews"
     VIDEO_CATEGORIES = "video_categories"
@@ -49,6 +50,8 @@ class Resource(StrEnum):
         elif self == Resource.CHARACTERS:
             data = api.get_paged_resource(self.value, api_key, delay)
         elif self == Resource.COMPANIES:
+            data = api.get_paged_resource(self.value, api_key, delay)
+        elif self == Resource.FRANCHISES:
             data = api.get_paged_resource(self.value, api_key, delay)
         elif self == Resource.REVIEWS:
             data = api.get_individualized_resource("review", 1000, api_key, delay)
@@ -76,6 +79,9 @@ class Resource(StrEnum):
             images = _extract_images_from_field(data, "image")
             images += _extract_images_from_text_field(data, "description")
         elif self == Resource.COMPANIES:
+            images = _extract_images_from_field(data, "image")
+            images += _extract_images_from_text_field(data, "description")
+        elif self == Resource.FRANCHISES:
             images = _extract_images_from_field(data, "image")
             images += _extract_images_from_text_field(data, "description")
         elif self == Resource.REVIEWS:
