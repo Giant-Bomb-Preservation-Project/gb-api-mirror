@@ -47,28 +47,21 @@ class Resource(StrEnum):
         """Download data for this resource."""
         data = []
 
-        if self == Resource.ACCESSORIES:
-            data = api.get_paged_resource(self.value, api_key, delay)
-        elif self == Resource.CHARACTERS:
-            data = api.get_paged_resource(self.value, api_key, delay)
-        elif self == Resource.COMPANIES:
-            data = api.get_paged_resource(self.value, api_key, delay)
-        elif self == Resource.FRANCHISES:
-            data = api.get_paged_resource(self.value, api_key, delay)
-        elif self == Resource.GAMES:
-            data = api.get_paged_resource(self.value, api_key, delay)
-        elif self == Resource.GAME_RATINGS:
+        if self in [
+            Resource.ACCESSORIES,
+            Resource.CHARACTERS,
+            Resource.COMPANIES,
+            Resource.FRANCHISES,
+            Resource.GAMES,
+            Resource.GAME_RATINGS,
+            Resource.USER_REVIEWS,
+            Resource.VIDEO_CATEGORIES,
+            Resource.VIDEO_SHOWS,
+            Resource.VIDEOS,
+        ]:
             data = api.get_paged_resource(self.value, api_key, delay)
         elif self == Resource.REVIEWS:
             data = api.get_individualized_resource("review", 1000, api_key, delay)
-        elif self == Resource.USER_REVIEWS:
-            data = api.get_paged_resource(self.value, api_key, delay)
-        elif self == Resource.VIDEO_CATEGORIES:
-            data = api.get_paged_resource(self.value, api_key, delay)
-        elif self == Resource.VIDEO_SHOWS:
-            data = api.get_paged_resource(self.value, api_key, delay)
-        elif self == Resource.VIDEOS:
-            data = api.get_paged_resource(self.value, api_key, delay)
         else:
             logger.error(f"Unable to download data from resource: {self}")
 
