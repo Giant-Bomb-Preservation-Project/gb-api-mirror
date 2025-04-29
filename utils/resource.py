@@ -38,6 +38,7 @@ class Resource(StrEnum):
     GAMES = "games"
     GAME_RATINGS = "game_ratings"
     GENRES = "genres"
+    LOCATIONS = "locations"
     REVIEWS = "reviews"
     USER_REVIEWS = "user_reviews"
     VIDEO_CATEGORIES = "video_categories"
@@ -56,6 +57,7 @@ class Resource(StrEnum):
             Resource.GAMES,
             Resource.GAME_RATINGS,
             Resource.GENRES,
+            Resource.LOCATIONS,
             Resource.USER_REVIEWS,
             Resource.VIDEO_CATEGORIES,
             Resource.VIDEO_SHOWS,
@@ -92,6 +94,9 @@ class Resource(StrEnum):
             pass  # no images
         elif self == Resource.GENRES:
             images = _extract_images_from_field(data, "image")
+        elif self == Resource.LOCATIONS:
+            images = _extract_images_from_field(data, "image")
+            images += _extract_images_from_text_field(data, "description")
         elif self == Resource.REVIEWS:
             images = _extract_images_from_text_field(data, "description")
         elif self == Resource.USER_REVIEWS:
