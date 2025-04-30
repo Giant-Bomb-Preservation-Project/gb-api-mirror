@@ -40,6 +40,7 @@ class Resource(StrEnum):
     GENRES = "genres"
     LOCATIONS = "locations"
     OBJECTS = "objects"
+    PEOPLE = "people"
     REVIEWS = "reviews"
     USER_REVIEWS = "user_reviews"
     VIDEO_CATEGORIES = "video_categories"
@@ -60,6 +61,7 @@ class Resource(StrEnum):
             Resource.GENRES,
             Resource.LOCATIONS,
             Resource.OBJECTS,
+            Resource.PEOPLE,
             Resource.USER_REVIEWS,
             Resource.VIDEO_CATEGORIES,
             Resource.VIDEO_SHOWS,
@@ -100,6 +102,9 @@ class Resource(StrEnum):
             images = _extract_images_from_field(data, "image")
             images += _extract_images_from_text_field(data, "description")
         elif self == Resource.OBJECTS:
+            images = _extract_images_from_field(data, "image")
+            images += _extract_images_from_text_field(data, "description")
+        elif self == Resource.PEOPLE:
             images = _extract_images_from_field(data, "image")
             images += _extract_images_from_text_field(data, "description")
         elif self == Resource.REVIEWS:
