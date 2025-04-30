@@ -165,26 +165,33 @@ def get_individualized_resource(
 
 def get_paged_resource(resource: str, api_key: str, delay: int) -> list:
     """Get a resource that's paged with limit/offset parameters."""
+    resources = []
+    offset = 0
+    while True:
+        results = get_resource(resource, api_key, offset)
+        if len(results) == 0:
+            break
+
+        resources += results
+        offset += PAGE_REQUEST_LIMIT
+
+        sleep(delay)
+
+    return resources
+
+
+def get_resource(resource: str, api_key: str, offset: int = 0) -> list:
+    """Get a resource from a given offset."""
     url = f"{BASE_URL}/{resource}/"
     params = {
         "api_key": api_key,
         "format": "json",
         "limit": PAGE_REQUEST_LIMIT,
-        "offset": 0,
+        "offset": offset,
     }
 
-    results = []
-    offset = 0
-    while True:
-        params["offset"] = offset
-        data = _get(url, params=params, headers=HEADERS)
+    data = _get(url, params=params, headers=HEADERS)
+    if not data["results"] or len(data["results"]) == 0:
+        return []
 
-        if not data["results"] or len(data["results"]) == 0:
-            break  # we're done here
-
-        results += data["results"]
-        offset += PAGE_REQUEST_LIMIT
-
-        sleep(delay)
-
-    return results
+    return data["results"]
