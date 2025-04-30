@@ -44,6 +44,7 @@ class Resource(StrEnum):
     PLATFORMS = "platforms"
     PROMOS = "promos"
     RATING_BOARDS = "rating_boards"
+    REGIONS = "regions"
     REVIEWS = "reviews"
     USER_REVIEWS = "user_reviews"
     VIDEO_CATEGORIES = "video_categories"
@@ -68,6 +69,7 @@ class Resource(StrEnum):
             Resource.PLATFORMS,
             Resource.PROMOS,
             Resource.RATING_BOARDS,
+            Resource.REGIONS,
             Resource.USER_REVIEWS,
             Resource.VIDEO_CATEGORIES,
             Resource.VIDEO_SHOWS,
@@ -117,6 +119,8 @@ class Resource(StrEnum):
             images = _extract_images_from_field(data, "image")
             images += _extract_images_from_text_field(data, "description")
         elif self == Resource.RATING_BOARDS:
+            images = _extract_images_from_field(data, "image")
+        elif self == Resource.REGIONS:
             images = _extract_images_from_field(data, "image")
         elif self == Resource.REVIEWS:
             images = _extract_images_from_text_field(data, "description")
