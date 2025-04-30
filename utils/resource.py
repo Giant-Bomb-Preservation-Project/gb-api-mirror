@@ -33,6 +33,7 @@ class Resource(StrEnum):
 
     ACCESSORIES = "accessories"
     CHARACTERS = "characters"
+    CHATS = "chats"
     COMPANIES = "companies"
     FRANCHISES = "franchises"
     GAMES = "games"
@@ -61,6 +62,7 @@ class Resource(StrEnum):
         if self in [
             Resource.ACCESSORIES,
             Resource.CHARACTERS,
+            Resource.CHATS,
             Resource.COMPANIES,
             Resource.FRANCHISES,
             Resource.GAMES,
