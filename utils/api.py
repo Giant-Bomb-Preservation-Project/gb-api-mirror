@@ -12,8 +12,8 @@ BASE_URL = "https://www.giantbomb.com/api"
 
 # Headers sent with each request
 HEADERS = {
-    "user-agent": "gb-api-mirror",
-    "accept": "application/json",
+    "User-Agent": "gb-api-mirror",
+    "Accept": "application/json",
 }
 
 # Delay between fetching images (to avoid overloading the API)
