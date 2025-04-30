@@ -42,6 +42,7 @@ class Resource(StrEnum):
     OBJECTS = "objects"
     PEOPLE = "people"
     PLATFORMS = "platforms"
+    PROMOS = "promos"
     RATING_BOARDS = "rating_boards"
     REVIEWS = "reviews"
     USER_REVIEWS = "user_reviews"
@@ -65,6 +66,7 @@ class Resource(StrEnum):
             Resource.OBJECTS,
             Resource.PEOPLE,
             Resource.PLATFORMS,
+            Resource.PROMOS,
             Resource.RATING_BOARDS,
             Resource.USER_REVIEWS,
             Resource.VIDEO_CATEGORIES,
