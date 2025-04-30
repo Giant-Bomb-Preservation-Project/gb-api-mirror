@@ -48,6 +48,7 @@ class Resource(StrEnum):
     RELEASES = "releases"
     REVIEWS = "reviews"
     THEMES = "themes"
+    TYPES = "types"
     USER_REVIEWS = "user_reviews"
     VIDEO_CATEGORIES = "video_categories"
     VIDEO_SHOWS = "video_shows"
@@ -82,6 +83,8 @@ class Resource(StrEnum):
             data = api.get_paged_resource(self.value, api_key, delay)
         elif self == Resource.REVIEWS:
             data = api.get_individualized_resource("review", 1000, api_key, delay)
+        elif self == Resource.TYPES:
+            data = api.get_resource(self.value, api_key)
         else:
             logger.error(f"Unable to download data from resource: {self}")
 
@@ -131,6 +134,8 @@ class Resource(StrEnum):
         elif self == Resource.REVIEWS:
             images = _extract_images_from_text_field(data, "description")
         elif self == Resource.THEMES:
+            pass  # no images
+        elif self == Resource.TYPES:
             pass  # no images
         elif self == Resource.USER_REVIEWS:
             images = _extract_images_from_text_field(data, "description")
