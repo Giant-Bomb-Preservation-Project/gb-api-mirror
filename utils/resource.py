@@ -100,7 +100,7 @@ class Resource(StrEnum):
         elif self == Resource.GAMES:
             images = _extract_images_from_field(data, "image")
             images += _extract_images_from_text_field(data, "description")
-        if self == Resource.GAME_RATINGS:
+        elif self == Resource.GAME_RATINGS:
             pass  # no images
         elif self == Resource.GENRES:
             images = _extract_images_from_field(data, "image")
