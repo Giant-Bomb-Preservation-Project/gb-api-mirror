@@ -35,6 +35,8 @@ class Resource(StrEnum):
     CHARACTERS = "characters"
     CHATS = "chats"
     COMPANIES = "companies"
+    CONCEPTS = "concepts"
+    DLCS = "dlcs"
     FRANCHISES = "franchises"
     GAMES = "games"
     GAME_RATINGS = "game_ratings"
@@ -53,6 +55,7 @@ class Resource(StrEnum):
     USER_REVIEWS = "user_reviews"
     VIDEO_CATEGORIES = "video_categories"
     VIDEO_SHOWS = "video_shows"
+    VIDEO_TYPES = "video_types"
     VIDEOS = "videos"
 
     def download_data(self, api_key: str, delay: int) -> list:
@@ -64,6 +67,8 @@ class Resource(StrEnum):
             Resource.CHARACTERS,
             Resource.CHATS,
             Resource.COMPANIES,
+            Resource.CONCEPTS,
+            Resource.DLCS,
             Resource.FRANCHISES,
             Resource.GAMES,
             Resource.GAME_RATINGS,
@@ -80,6 +85,7 @@ class Resource(StrEnum):
             Resource.THEMES,
             Resource.VIDEO_CATEGORIES,
             Resource.VIDEO_SHOWS,
+            Resource.VIDEO_TYPES,
             Resource.VIDEOS,
         ]:
             data = api.get_paged_resource(self.value, api_key, delay)
@@ -105,6 +111,11 @@ class Resource(StrEnum):
         elif self == Resource.COMPANIES:
             images = _extract_images_from_field(data, "image")
             images += _extract_images_from_text_field(data, "description")
+        elif self == Resource.CONCEPTS:
+            images = _extract_images_from_field(data, "image")
+            images += _extract_images_from_text_field(data, "description")
+        elif self == Resource.DLCS:
+            images = _extract_images_from_field(data, "image")
         elif self == Resource.FRANCHISES:
             images = _extract_images_from_field(data, "image")
             images += _extract_images_from_text_field(data, "description")
@@ -146,6 +157,8 @@ class Resource(StrEnum):
         elif self == Resource.VIDEO_SHOWS:
             images = _extract_images_from_field(data, "image")
             images += _extract_images_from_field(data, "logo")
+        elif self == Resource.VIDEO_TYPES:
+            pass  # no images
         elif self == Resource.VIDEOS:
             images = _extract_images_from_field(data, "image")
             # extract the images from the video shows as well if they didn't come through the API
