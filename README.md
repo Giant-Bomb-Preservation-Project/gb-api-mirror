@@ -3,6 +3,8 @@
 Downloads the content from the [Giant Bomb API](https://www.giantbomb.com/api/)
 and stores it locally as JSON files.
 
+![Screenshot of the script downloading video shows, videos, promos, and reviews](https://github.com/Giant-Bomb-Preservation-Project/gb-api-mirror/blob/main/screenshot.png?raw=true)
+
 ## Requirements
 
 * Python 3.12+
