@@ -36,8 +36,14 @@ IMAGE_URL_PREFIXES = [
 # How many times to retry a failed GET request
 MAX_RETRIES = 10
 
+# Delay between each request (to avoid overloading the API and getting banned)
+REQUEST_DELAY = 1
+
 # How long (in seconds) to wait between retrying requests
 RETRY_DELAY = 30
+
+# How long (in seconds) to wait between retrying requests if we got a rate limit error
+RETRY_DELAY_RATE_LIMIT = 600
 
 # How many items to request per page (max 100)
 PAGE_REQUEST_LIMIT = 100
@@ -72,8 +78,14 @@ def _get(url: str, params: dict | None = None, headers: dict | None = None) -> d
         if response.status_code == 200:
             return response.json()  # yay!
 
-        logger.error(f"Unexpected response ({response.status_code}): {response.text}")
-        sleep(RETRY_DELAY)
+        if response.status_code == 420:
+            logger.warn("We've gone over the limit! Waiting 10 minutes to try again...")
+            sleep(RETRY_DELAY_RATE_LIMIT)
+        else:
+            logger.error(
+                f"Unexpected response ({response.status_code}): {response.text}"
+            )
+            sleep(RETRY_DELAY)
 
     logger.fatal(f"Unable to fetch resource after {MAX_RETRIES} retries")
     return {}
@@ -132,9 +144,7 @@ def download_images(
     return downloaded, skipped, errors
 
 
-def get_individualized_resource(
-    resource: str, max_count: int, api_key: str, delay: int
-) -> list:
+def get_individualized_resource(resource: str, max_count: int, api_key: str) -> list:
     """Get a resource that needs to be fetched one entry at a time."""
     base_url = f"{BASE_URL}/{resource}"
     params = {
@@ -158,12 +168,12 @@ def get_individualized_resource(
         if num > max_count:
             break
 
-        sleep(delay)
+        sleep(REQUEST_DELAY)
 
     return results
 
 
-def get_paged_resource(resource: str, api_key: str, delay: int) -> list:
+def get_paged_resource(resource: str, api_key: str) -> list:
     """Get a resource that's paged with limit/offset parameters."""
     resources = []
     offset = 0
@@ -175,7 +185,7 @@ def get_paged_resource(resource: str, api_key: str, delay: int) -> list:
         resources += results
         offset += PAGE_REQUEST_LIMIT
 
-        sleep(delay)
+        sleep(REQUEST_DELAY)
 
     return resources
 

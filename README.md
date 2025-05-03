@@ -39,7 +39,6 @@ python gb-api-mirror.py <path to save files>
 
 ### Options
 
-* `--delay SECONDS` Delay between the requests (in seconds)
 * `--images` Also download the images
 * `--include RESOURCES` Comma-separated list of the resources to download (defaults to all)
 * `--overwrite-images` Overwrite existing images (by default it doesn't download ones that exist)

@@ -17,14 +17,6 @@ if __name__ == "__main__":
         help="directory to store the data in",
     )
     parser.add_argument(
-        "-d",
-        "--delay",
-        type=int,
-        default=20,  # ~200 requests per hour
-        metavar="SECONDS",
-        help="time to delay between requests (default: 20)",
-    )
-    parser.add_argument(
         "-f",
         "--images",
         help="download images alongside metadata",
@@ -94,7 +86,7 @@ if __name__ == "__main__":
             continue
 
         logger.info(f"Downloading {resource}...")
-        data = resource.download_data(api_key, args.delay)
+        data = resource.download_data(api_key)
         if len(data) == 0:
             logger.warn(f"Got 0 results for: {resource}")
             continue
