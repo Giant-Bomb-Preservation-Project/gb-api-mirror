@@ -39,6 +39,9 @@ MAX_RETRIES = 10
 # How long (in seconds) to wait between retrying requests
 RETRY_DELAY = 30
 
+# How long (in seconds) to wait between retrying requests if we got a rate limit error
+RETRY_DELAY_RATE_LIMIT = 600
+
 # How many items to request per page (max 100)
 PAGE_REQUEST_LIMIT = 100
 
@@ -72,8 +75,14 @@ def _get(url: str, params: dict | None = None, headers: dict | None = None) -> d
         if response.status_code == 200:
             return response.json()  # yay!
 
-        logger.error(f"Unexpected response ({response.status_code}): {response.text}")
-        sleep(RETRY_DELAY)
+        if response.status_code == 420:
+            logger.warn("We've gone over the limit! Waiting 10 minutes to try again...")
+            sleep(RETRY_DELAY_RATE_LIMIT)
+        else:
+            logger.error(
+                f"Unexpected response ({response.status_code}): {response.text}"
+            )
+            sleep(RETRY_DELAY)
 
     logger.fatal(f"Unable to fetch resource after {MAX_RETRIES} retries")
     return {}
