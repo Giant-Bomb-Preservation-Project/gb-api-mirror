@@ -58,7 +58,7 @@ class Resource(StrEnum):
     VIDEO_TYPES = "video_types"
     VIDEOS = "videos"
 
-    def download_data(self, api_key: str, delay: int) -> list:
+    def download_data(self, api_key: str) -> list:
         """Download data for this resource."""
         data = []
 
@@ -88,9 +88,9 @@ class Resource(StrEnum):
             Resource.VIDEO_TYPES,
             Resource.VIDEOS,
         ]:
-            data = api.get_paged_resource(self.value, api_key, delay)
+            data = api.get_paged_resource(self.value, api_key)
         elif self == Resource.REVIEWS:
-            data = api.get_individualized_resource("review", 1000, api_key, delay)
+            data = api.get_individualized_resource("review", 1000, api_key)
         elif self == Resource.TYPES:
             data = api.get_resource(self.value, api_key)
         else:

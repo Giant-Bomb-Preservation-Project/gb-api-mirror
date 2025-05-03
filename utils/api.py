@@ -36,6 +36,9 @@ IMAGE_URL_PREFIXES = [
 # How many times to retry a failed GET request
 MAX_RETRIES = 10
 
+# Delay between each request (to avoid overloading the API and getting banned)
+REQUEST_DELAY = 1
+
 # How long (in seconds) to wait between retrying requests
 RETRY_DELAY = 30
 
@@ -141,9 +144,7 @@ def download_images(
     return downloaded, skipped, errors
 
 
-def get_individualized_resource(
-    resource: str, max_count: int, api_key: str, delay: int
-) -> list:
+def get_individualized_resource(resource: str, max_count: int, api_key: str) -> list:
     """Get a resource that needs to be fetched one entry at a time."""
     base_url = f"{BASE_URL}/{resource}"
     params = {
@@ -167,12 +168,12 @@ def get_individualized_resource(
         if num > max_count:
             break
 
-        sleep(delay)
+        sleep(REQUEST_DELAY)
 
     return results
 
 
-def get_paged_resource(resource: str, api_key: str, delay: int) -> list:
+def get_paged_resource(resource: str, api_key: str) -> list:
     """Get a resource that's paged with limit/offset parameters."""
     resources = []
     offset = 0
@@ -184,7 +185,7 @@ def get_paged_resource(resource: str, api_key: str, delay: int) -> list:
         resources += results
         offset += PAGE_REQUEST_LIMIT
 
-        sleep(delay)
+        sleep(REQUEST_DELAY)
 
     return resources
 
