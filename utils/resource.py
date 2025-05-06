@@ -1,8 +1,10 @@
 from enum import StrEnum
+import math
+import os
 
 from bs4 import BeautifulSoup
 
-from utils import api, logger
+from utils import api, file, logger
 
 
 # Which image size to download
@@ -26,6 +28,15 @@ def _extract_images_from_text_field(items: list[dict], field: str) -> list[str]:
                 images.append(str(figure.get("data-img-src")))
 
     return images
+
+
+def _save_data(data: list, target_file: str):
+    """Save the data to a given file, logging how much."""
+    file.save_json_file(data, target_file)
+    if len(data) == 0:
+        logger.warn(" -> saved 0 items")
+    else:
+        logger.success(f" -> saved {len(data)} items")
 
 
 class Resource(StrEnum):
@@ -59,10 +70,48 @@ class Resource(StrEnum):
     VIDEO_TYPES = "video_types"
     VIDEOS = "videos"
 
-    def download_data(self, api_key: str, param: str | None = None) -> list:
-        """Download data for this resource."""
+    def download_data(self, target_dir: str, api_key: str, skip_existing: bool):
+        """Download data for this resource, saving it in the given directory."""
+        if not os.path.isdir(target_dir):
+            logger.debug(f"Creating directory: {target_dir}")
+            os.makedirs(target_dir)
+
+        # Special resource handling
+
+        if self == Resource.PROFILE_IMAGES:
+            # Split resources into files, organised into folder by thousands
+            resource_dir = os.path.join(target_dir, self.value)
+            for profile_id in range(1, 1000000):
+                profile_dir = os.path.join(
+                    resource_dir, str(math.floor(profile_id / 1000))
+                )
+                resource_file = os.path.join(profile_dir, f"{profile_id}.json")
+                if os.path.isfile(resource_file) and skip_existing:
+                    logger.info(
+                        f"Skipping existing resource: {self.value}/{profile_id}"
+                    )
+                    continue
+
+                if not os.path.isdir(profile_dir):
+                    logger.debug(f"Creating directory: {profile_dir}")
+                    os.makedirs(profile_dir)
+
+                logger.info(f"Downloading {self.value}/{profile_id}...")
+                data = api.get_image_data(f"1310-{profile_id}")
+                _save_data(data, resource_file)
+
+            return
+
+        # Regular resource handling
+
+        resource_file = os.path.join(target_dir, f"{self.value}.json")
         data = []
 
+        if os.path.isfile(resource_file) and skip_existing:
+            logger.info(f"Skipping existing resource: {self.value}")
+            return
+
+        logger.info(f"Downloading {self.value}...")
         if self in [
             Resource.ACCESSORIES,
             Resource.CHARACTERS,
@@ -90,8 +139,6 @@ class Resource(StrEnum):
             Resource.VIDEOS,
         ]:
             data = api.get_paged_resource(self.value, api_key)
-        elif self == Resource.PROFILE_IMAGES:
-            data = api.get_image_data(f"1310-{param}")
         elif self == Resource.REVIEWS:
             data = api.get_individualized_resource("review", 1000, api_key)
         elif self == Resource.TYPES:
@@ -99,11 +146,17 @@ class Resource(StrEnum):
         else:
             logger.error(f"Unable to download data from resource: {self}")
 
-        return data
+        _save_data(data, resource_file)
 
-    def extract_images(self, data: list) -> list[str]:
-        """Extract out all the images from the given resource."""
+    def extract_images(self, target_dir: str) -> list[str]:
+        """Extract out all the images from the given resource by loading its file."""
+        resource_file = os.path.join(target_dir, f"{self.value}.json")
         images = []
+
+        data = file.load_json_file(resource_file)
+
+        if self == Resource.PROFILE_IMAGES:
+            logger.fatal("TODO")
 
         if self == Resource.ACCESSORIES:
             images = _extract_images_from_field(data, "image")
