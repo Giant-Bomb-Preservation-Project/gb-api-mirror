@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+import math
 import os
 
 from utils import api, logger, file
@@ -6,6 +7,34 @@ from utils.resource import Resource
 
 # Subdir to store the images
 IMAGE_DIR = "uploads"
+
+
+def _download_resource(
+    resource: Resource,
+    target_file: str,
+    skip_existing: bool,
+    api_key: str,
+    param: str | None = None,
+) -> list:
+    """Helper function for downloading a resource to a given file, returning the downloaded data."""
+    resource_name = resource.value
+    if param:
+        resource_name += f"/{param}"
+
+    if os.path.isfile(target_file) and skip_existing:
+        logger.info(f"Skipping existing resource: {resource_name}")
+        return
+
+    logger.info(f"Downloading {resource_name}...")
+    data = resource.download_data(api_key, param)
+
+    file.save_json_file(data, target_file)
+    if len(data) == 0:
+        logger.warn("Saved 0 item")
+    else:
+        logger.success(f"Saved {len(data)} items")
+
+    return data
 
 
 if __name__ == "__main__":
@@ -80,30 +109,50 @@ if __name__ == "__main__":
         os.makedirs(target_dir)
 
     for resource in resources:
-        target_file = os.path.join(target_dir, resource.value + ".json")
-        if os.path.isfile(target_file) and args.skip_existing:
-            logger.info(f"Skipping existing resource: {resource}")
-            continue
+        data = []
 
-        logger.info(f"Downloading {resource}...")
-        data = resource.download_data(api_key)
-        if len(data) == 0:
-            logger.warn(f"Got 0 results for: {resource}")
+        if resource == Resource.PROFILE_IMAGES:
+            resource_dir = os.path.join(target_dir, resource.value)
 
-        file.save_json_file(data, target_file)
-        logger.success(f"Saved {len(data)} items")
-        # data = file.load_json_file(target_file)
+            # Download one per profile ID
+            for profile_id in range(1, 999999):
+                profile_dir = os.path.join(
+                    resource_dir, str(math.floor(profile_id / 1000))
+                )
+                if not os.path.isdir(profile_dir):
+                    logger.debug(f"Creating directory: {profile_dir}")
+                    os.makedirs(profile_dir)
+                target_file = os.path.join(profile_dir, f"{profile_id}.json")
+                _download_resource(
+                    resource,
+                    target_file=target_file,
+                    skip_existing=args.skip_existing,
+                    api_key=api_key,
+                    param=str(profile_id),
+                )
 
-        if args.download_images:
-            images = resource.extract_images(data)
-            if len(images) == 0:
-                logger.warn(f"Got 0 images for {resource}")
-                continue
-
-            logger.info(f"Downloading {len(images)} images...")
-            downloaded, skipped, errors = api.download_images(
-                images, os.path.join(target_dir, IMAGE_DIR), args.overwrite_images
+            if args.download_images:
+                logger.fatal("Downloading profile images currently not supported")
+        else:
+            target_file = os.path.join(target_dir, f"{resource.value}.json")
+            data = _download_resource(
+                resource,
+                target_file=target_file,
+                skip_existing=args.skip_existing,
+                api_key=api_key,
+                param=None,
             )
-            logger.success(
-                f"Saved {downloaded} images ({skipped} skipped, {errors} errors)"
-            )
+
+            if args.download_images:
+                images = resource.extract_images(data)
+                if len(images) == 0:
+                    logger.warn(f"Got 0 images for {resource}")
+                    continue
+
+                logger.info(f"Downloading {len(images)} images...")
+                downloaded, skipped, errors = api.download_images(
+                    images, os.path.join(target_dir, IMAGE_DIR), args.overwrite_images
+                )
+                logger.success(
+                    f"Saved {downloaded} images ({skipped} skipped, {errors} errors)"
+                )

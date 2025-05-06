@@ -159,7 +159,7 @@ def get_individualized_resource(resource: str, max_count: int, api_key: str) -> 
         data = _get(url, params=params, headers=HEADERS)
 
         if "error" in data and data["error"] != "OK":
-            logger.error(f"Received error for /{resource}/{num}: {data["error"]}")
+            logger.error(f"Received error for /{resource}/{num}: {data['error']}")
 
         if "results" in data and data["results"]:
             results.append(data["results"])
@@ -171,6 +171,34 @@ def get_individualized_resource(resource: str, max_count: int, api_key: str) -> 
         sleep(REQUEST_DELAY)
 
     return results
+
+
+def get_image_data(object_id: str) -> list:
+    """Gets all the image data for a given object."""
+    max_count = 1000
+    url = "https://www.giantbomb.com/js/image-data.json"
+    params = {
+        "images": object_id,
+        "count": max_count,
+    }
+
+    images = []
+    start = 0
+    while True:
+        params["start"] = start
+        response = _get(url, params=params, headers=HEADERS)
+        if "images" not in response:
+            print(response)
+            raise Exception("Unexpected response")
+
+        images += response["images"]
+
+        if len(response["images"]) < max_count:  # we've hit the last page
+            break
+
+        start += max_count
+
+    return images
 
 
 def get_paged_resource(resource: str, api_key: str) -> list:

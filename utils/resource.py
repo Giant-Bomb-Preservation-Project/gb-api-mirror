@@ -50,6 +50,7 @@ class Resource(StrEnum):
     REGIONS = "regions"
     RELEASES = "releases"
     REVIEWS = "reviews"
+    PROFILE_IMAGES = "profile_images"
     THEMES = "themes"
     TYPES = "types"
     USER_REVIEWS = "user_reviews"
@@ -58,7 +59,7 @@ class Resource(StrEnum):
     VIDEO_TYPES = "video_types"
     VIDEOS = "videos"
 
-    def download_data(self, api_key: str) -> list:
+    def download_data(self, api_key: str, param: str | None = None) -> list:
         """Download data for this resource."""
         data = []
 
@@ -89,6 +90,8 @@ class Resource(StrEnum):
             Resource.VIDEOS,
         ]:
             data = api.get_paged_resource(self.value, api_key)
+        elif self == Resource.PROFILE_IMAGES:
+            data = api.get_image_data(f"1310-{param}")
         elif self == Resource.REVIEWS:
             data = api.get_individualized_resource("review", 1000, api_key)
         elif self == Resource.TYPES:
