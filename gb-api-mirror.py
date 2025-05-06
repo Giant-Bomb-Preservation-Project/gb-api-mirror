@@ -89,7 +89,6 @@ if __name__ == "__main__":
         data = resource.download_data(api_key)
         if len(data) == 0:
             logger.warn(f"Got 0 results for: {resource}")
-            continue
 
         file.save_json_file(data, target_file)
         logger.success(f"Saved {len(data)} items")
