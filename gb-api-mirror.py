@@ -5,7 +5,7 @@ from utils import api, logger, file
 from utils.resource import Resource
 
 # Subdir to store the images
-IMAGE_DIR = "images"
+IMAGE_DIR = "uploads"
 
 
 if __name__ == "__main__":
@@ -18,8 +18,8 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "-f",
-        "--images",
-        help="download images alongside metadata",
+        "--download-images",
+        help="download image files alongside metadata",
         action="store_true",
     )
     parser.add_argument(
@@ -95,7 +95,7 @@ if __name__ == "__main__":
         logger.success(f"Saved {len(data)} items")
         # data = file.load_json_file(target_file)
 
-        if args.images:
+        if args.download_images:
             images = resource.extract_images(data)
             if len(images) == 0:
                 logger.warn(f"Got 0 images for {resource}")
