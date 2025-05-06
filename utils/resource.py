@@ -10,6 +10,9 @@ from utils import api, file, logger
 # Which image size to download
 IMAGE_SIZE = "original_url"
 
+# The URL that is at the start of all images
+IMAGE_URL_PREFIX = "https://www.giantbomb.com/a/uploads/"
+
 
 def _extract_images_from_field(items: list[dict], field: str) -> list[str]:
     """Extract out the image field from a list of items."""
@@ -30,6 +33,87 @@ def _extract_images_from_text_field(items: list[dict], field: str) -> list[str]:
     return images
 
 
+def _fill_image_object(image_url: str) -> dict:
+    """Take a single image URL and create a full image object."""
+    if not image_url.startswith(IMAGE_URL_PREFIX):
+        return {
+            "icon_url": image_url,
+            "medium_url": image_url,
+            "screen_url": image_url,
+            "screen_large_url": image_url,
+            "small_url": image_url,
+            "super_url": image_url,
+            "thumb_url": image_url,
+            "tiny_url": image_url,
+            "original_url": image_url,
+            "image_tags": None,
+        }
+
+    image_uri = "/" + "/".join(image_url.replace(IMAGE_URL_PREFIX, "").split("/")[1:])
+
+    return {
+        "icon_url": IMAGE_URL_PREFIX + "square_avatar" + image_uri,
+        "medium_url": IMAGE_URL_PREFIX + "scale_medium" + image_uri,
+        "screen_url": IMAGE_URL_PREFIX + "screen_medium" + image_uri,
+        "screen_large_url": IMAGE_URL_PREFIX + "screen_kubrick" + image_uri,
+        "small_url": IMAGE_URL_PREFIX + "scale_small" + image_uri,
+        "super_url": IMAGE_URL_PREFIX + "scale_large" + image_uri,
+        "thumb_url": IMAGE_URL_PREFIX + "scale_avatar" + image_uri,
+        "tiny_url": IMAGE_URL_PREFIX + "square_mini" + image_uri,
+        "original_url": IMAGE_URL_PREFIX + "original" + image_uri,
+        "image_tags": None,
+    }
+
+
+def _extract_articles_from_page(page: str) -> list:
+    """Extract a list of articles from a page."""
+    articles = []
+    soup = BeautifulSoup(page, "html.parser")
+    cards = soup.select(".site-container .content-item--card-item a")
+    for card in cards:
+        guid = str(card["href"]).rsplit("/")[-2]
+        [image, meta] = card.find_all("div")
+        meta_elements = meta.find_all("p")
+        articles.append(
+            {
+                "site_detail_url": f"https://www.giantbomb.com{card['href']}",
+                "deck": meta_elements[1].text,
+                "guid": guid,
+                "id": int(guid.split("-")[1]),
+                "title": meta_elements[0].text,
+                "image": _fill_image_object(image.img["src"]),
+            }
+        )
+
+    return articles
+
+
+def _extract_article_contents_from_page(page: str) -> dict:
+    soup = BeautifulSoup(page, "html.parser").select("article.news-article")[0]
+    header = soup.select(".news-hdr")[0]
+    content = soup.select(".article-body .content-entity-body")[0]
+    related = [
+        {
+            "site_detail_url": "https://www.giantbomb.com" + str(item["href"]),
+            "name": item.text,
+        }
+        for item in soup.select(".news-related dd a")
+    ]
+
+    user = None
+    if header.h3 and header.h3.a:
+        user = str(header.h3.a["href"]).rsplit("/")[-2]
+
+    return {
+        "title": header.h1.text if header.h1 else None,
+        "deck": header.p.text if header.p else None,
+        "user": user,
+        "content": str(content),
+        "related": related,
+        "date": header.time["datetime"] if header.time else None,
+    }
+
+
 def _save_data(data: list, target_file: str):
     """Save the data to a given file, logging how much."""
     file.save_json_file(data, target_file)
@@ -43,6 +127,7 @@ class Resource(StrEnum):
     """A resource that is downloadable from the GB API."""
 
     ACCESSORIES = "accessories"
+    ARTICLES = "articles"
     CHARACTERS = "characters"
     CHATS = "chats"
     COMPANIES = "companies"
@@ -77,6 +162,43 @@ class Resource(StrEnum):
             os.makedirs(target_dir)
 
         # Special resource handling
+
+        if self == Resource.ARTICLES:
+            resource_file = os.path.join(target_dir, f"{self.value}.json")
+            if os.path.isfile(resource_file) and skip_existing:
+                logger.info(f"Skipping existing resource: {self.value}")
+                return
+
+            logger.info(f"Downloading {self.value}...")
+            data = []
+            page = 1
+            params = {
+                "type": "articles",
+            }
+            while True:
+                params["page"] = str(page)
+                response = api.get_page("https://www.giantbomb.com/words/", params)
+                articles = _extract_articles_from_page(response)
+
+                if len(articles) == 0:
+                    break
+
+                for article in articles:
+                    try:
+                        response = api.get_page(article["site_detail_url"])
+                        content = _extract_article_contents_from_page(response)
+                        data.append(article | content)
+                    except api.ApiError as error:
+                        logger.error(
+                            f"Unable to extract article content from {article['site_detail_url']}: {error}"
+                        )
+                        data.append(article)
+
+                page += 1
+
+            _save_data(data, resource_file)
+
+            return
 
         if self == Resource.PROFILE_IMAGES:
             # Split resources into files, organised into folder by thousands
@@ -156,6 +278,9 @@ class Resource(StrEnum):
         data = file.load_json_file(resource_file)
 
         if self == Resource.PROFILE_IMAGES:
+            logger.fatal("TODO")
+
+        if self == Resource.ARTICLES:
             logger.fatal("TODO")
 
         if self == Resource.ACCESSORIES:

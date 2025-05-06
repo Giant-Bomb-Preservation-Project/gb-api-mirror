@@ -1,6 +1,7 @@
 import os
 import re
 from time import sleep
+from typing import Any
 
 import requests
 
@@ -46,6 +47,10 @@ RETRY_DELAY_RATE_LIMIT = 600
 PAGE_REQUEST_LIMIT = 100
 
 
+class ApiError(Exception):
+    """Generic API error."""
+
+
 def _format_dict(data: dict | None, connect: str, join: str) -> str:
     """Format a dict for output."""
     if data is None:
@@ -54,7 +59,7 @@ def _format_dict(data: dict | None, connect: str, join: str) -> str:
     return join.join([f"{k}{connect}{v}" for k, v in data.items()])
 
 
-def _get(url: str, params: dict | None = None, as_json: bool = True) -> any:
+def _get(url: str, params: dict | None = None, as_json: bool = True) -> Any:
     """Make a GET request, returning the response parsed as JSON or text."""
     tries = 0
     while tries < MAX_RETRIES:
@@ -88,7 +93,7 @@ def _get(url: str, params: dict | None = None, as_json: bool = True) -> any:
             )
             sleep(RETRY_DELAY)
 
-    logger.fatal(f"Unable to fetch resource after {MAX_RETRIES} retries")
+    raise ApiError(f"Unable to fetch resource after {MAX_RETRIES} retries")
     return {}
 
 
@@ -145,7 +150,7 @@ def download_images(
     return downloaded, skipped, errors
 
 
-def get_page(url: str, params: dict) -> str:
+def get_page(url: str, params: dict = {}) -> str:
     """Get a web page with the given URL and paramenters, not parsing it as JSON."""
     return _get(url, params, as_json=False)
 
