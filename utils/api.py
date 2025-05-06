@@ -10,11 +10,8 @@ from utils import logger
 # Base URL for the API
 BASE_URL = "https://www.giantbomb.com/api"
 
-# Headers sent with each request
-HEADERS = {
-    "User-Agent": "gb-api-mirror",
-    "Accept": "application/json",
-}
+# Header sent with each request
+USER_AGENT = "gb-api-mirror"
 
 # Delay between fetching images (to avoid overloading the API)
 IMAGE_DELAY = 0.5
@@ -57,11 +54,19 @@ def _format_dict(data: dict | None, connect: str, join: str) -> str:
     return join.join([f"{k}{connect}{v}" for k, v in data.items()])
 
 
-def _get(url: str, params: dict | None = None, headers: dict | None = None) -> dict:
-    """Make a GET request, returning the response parsed as JSON."""
+def _get(url: str, params: dict | None = None, as_json: bool = True) -> any:
+    """Make a GET request, returning the response parsed as JSON or text."""
     tries = 0
     while tries < MAX_RETRIES:
         tries += 1
+
+        # Headers sent with each request
+        headers = {
+            "User-Agent": USER_AGENT,
+        }
+        if as_json:
+            headers["Accept"] = "application/json"
+
         logger.debug(
             f"GET {url} "
             + _format_dict(params, "=", "&")
@@ -70,13 +75,9 @@ def _get(url: str, params: dict | None = None, headers: dict | None = None) -> d
             + ")"
         )
 
-        if headers is None:
-            headers = {}
-        headers["Accept"] = "application/json"
-
         response = requests.get(url, params=params, headers=headers)
         if response.status_code == 200:
-            return response.json()  # yay!
+            return response.json() if as_json else response.text  # yay!
 
         if response.status_code == 420:
             logger.warn("We've gone over the limit! Waiting 10 minutes to try again...")
@@ -144,6 +145,11 @@ def download_images(
     return downloaded, skipped, errors
 
 
+def get_page(url: str, params: dict) -> str:
+    """Get a web page with the given URL and paramenters, not parsing it as JSON."""
+    return _get(url, params, as_json=False)
+
+
 def get_individualized_resource(resource: str, max_count: int, api_key: str) -> list:
     """Get a resource that needs to be fetched one entry at a time."""
     base_url = f"{BASE_URL}/{resource}"
@@ -156,7 +162,7 @@ def get_individualized_resource(resource: str, max_count: int, api_key: str) -> 
     num = 1
     while True:
         url = f"{base_url}/{num}/"
-        data = _get(url, params=params, headers=HEADERS)
+        data = _get(url, params)
 
         if "error" in data and data["error"] != "OK":
             logger.error(f"Received error for /{resource}/{num}: {data['error']}")
@@ -186,7 +192,7 @@ def get_image_data(object_id: str) -> list:
     start = 0
     while True:
         params["start"] = start
-        response = _get(url, params=params, headers=HEADERS)
+        response = _get(url, params)
         if "images" not in response:
             print(response)
             raise Exception("Unexpected response")
@@ -228,7 +234,7 @@ def get_resource(resource: str, api_key: str, offset: int = 0) -> list:
         "offset": offset,
     }
 
-    data = _get(url, params=params, headers=HEADERS)
+    data = _get(url, params)
     if not data["results"] or len(data["results"]) == 0:
         return []
 
