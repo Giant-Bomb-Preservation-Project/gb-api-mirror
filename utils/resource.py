@@ -1,5 +1,6 @@
 from enum import StrEnum
 import math
+import re
 import os
 
 from bs4 import BeautifulSoup
@@ -12,6 +13,15 @@ IMAGE_SIZE = "original_url"
 
 # The URL that is at the start of all images
 IMAGE_URL_PREFIX = "https://www.giantbomb.com/a/uploads/"
+
+# Attributes in the <img> tags that contain the source images
+IMAGE_SOURCE_ATTRIBUTES = [
+    "srcset",
+    "data-srcset",
+    "data-full-srcset",
+]
+
+SRCSET_WIDTH_RE = r"\s+\d+w$"
 
 
 def _extract_images_from_field(items: list[dict], field: str) -> list[str]:
@@ -28,7 +38,33 @@ def _extract_images_from_text_field(items: list[dict], field: str) -> list[str]:
             figures = soup.select("figure[data-img-src]")
 
             for figure in figures:
-                images.append(str(figure.get("data-img-src")))
+                images += str(figure.get("data-img-src")).split(",")
+
+            tags = soup.select("img")
+            for tag in tags:
+                srcset = ""
+                for attr in IMAGE_SOURCE_ATTRIBUTES:
+                    if attr in tag.attrs:
+                        srcset = tag.attrs[attr]
+                        break
+
+                if srcset == "":
+                    if tag.src:  # fall back to the image source
+                        images.append(str(tag.src))
+                    continue
+
+                srcs = [
+                    re.sub(SRCSET_WIDTH_RE, "", src)
+                    for src in srcset.split(", ")
+                    if src.startswith(f"{IMAGE_URL_PREFIX}original/")
+                ]
+
+                if len(srcs) == 0:
+                    if tag.src:  # fall back to the image source
+                        images.append(str(tag.src))
+                    continue
+
+                images += srcs
 
     return images
 
@@ -280,12 +316,12 @@ class Resource(StrEnum):
         if self == Resource.PROFILE_IMAGES:
             logger.fatal("TODO")
 
-        if self == Resource.ARTICLES:
-            logger.fatal("TODO")
-
         if self == Resource.ACCESSORIES:
             images = _extract_images_from_field(data, "image")
             images += _extract_images_from_text_field(data, "description")
+        elif self == Resource.ARTICLES:
+            images = _extract_images_from_field(data, "image")
+            images += _extract_images_from_text_field(data, "content")
         elif self == Resource.CHARACTERS:
             images = _extract_images_from_field(data, "image")
             images += _extract_images_from_text_field(data, "description")
