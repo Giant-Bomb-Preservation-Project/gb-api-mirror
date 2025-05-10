@@ -4,6 +4,7 @@ from time import sleep
 from typing import Any
 
 import requests
+from requests.exceptions import HTTPError
 
 from utils import logger
 
@@ -23,13 +24,19 @@ IMAGE_URL_MAPPING = {
     "https://giantbomb1.cbsistatic.com/": "https://www.giantbomb.com/a/",
     "https://www.giantbomb.com/a/uploads/scale_super/": "https://www.giantbomb.com/a/uploads/original/",
     "https://giantbomb.com/a/uploads/scale_super/": "https://www.giantbomb.com/a/uploads/original/",
+    "https://www.giantbomb.com/a/uploads-dev/": "https://www.giantbomb.com/a/uploads/",
 }
 
 # Valid prefixes for downloading images (any others will be skipped)
 IMAGE_URL_PREFIXES = [
     "https://www.giantbomb.com/a/uploads/original/",
     "https://giantbomb.com/a/uploads/original/",
+    "https://www.giantbomb.com/a/uploads/screen_kubrick/",
+    "https://giantbomb.com/a/uploads/screen_kubrick/",
 ]
+
+# If unable to download original size, fallback to this size
+IMAGE_SIZE_FALLBACK = "screen_kubrick"
 
 # How many times to retry a failed GET request
 MAX_RETRIES = 10
@@ -145,9 +152,13 @@ def download_images(
                         f.write(chunk)
             downloaded += 1
             sleep(IMAGE_DELAY)
-        except Exception as err:
-            logger.error(f"Error when downloading file: {str(err)}")
+        except HTTPError as e:
+            logger.error(f"Error when downloading file: {str(e)}")
             errors += 1
+
+            # Try with a different sized image
+            if url.find("/original/") != -1:
+                images.append(url.replace("/original/", f"/{IMAGE_SIZE_FALLBACK}/"))
 
     return downloaded, skipped, errors
 
