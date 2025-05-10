@@ -230,26 +230,36 @@ def get_paged_resource(resource: str, api_key: str) -> list:
     resources = []
     offset = 0
     while True:
-        results = get_resource(resource, api_key, offset)
-        if len(results) == 0:
+        url = f"{BASE_URL}/{resource}/"
+        params = {
+            "api_key": api_key,
+            "format": "json",
+            "limit": PAGE_REQUEST_LIMIT,
+            "offset": offset,
+        }
+
+        data = _get(url, params)
+        if not data["results"] or len(data["results"]) == 0:
             break
 
-        resources += results
-        offset += PAGE_REQUEST_LIMIT
+        resources += data["results"]
+        if "number_of_total_results" in data:
+            if len(resources) == data["number_of_total_results"]:
+                break  # trust that we're done here
 
+        offset += PAGE_REQUEST_LIMIT
         sleep(REQUEST_DELAY)
 
     return resources
 
 
-def get_resource(resource: str, api_key: str, offset: int = 0) -> list:
-    """Get a resource from a given offset."""
+def get_resource(resource: str, api_key: str) -> list:
+    """Get a single resource."""
     url = f"{BASE_URL}/{resource}/"
     params = {
         "api_key": api_key,
         "format": "json",
         "limit": PAGE_REQUEST_LIMIT,
-        "offset": offset,
     }
 
     data = _get(url, params)

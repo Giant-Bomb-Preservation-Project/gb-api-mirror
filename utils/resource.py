@@ -174,6 +174,7 @@ class Resource(StrEnum):
     GAMES = "games"
     GAME_RATINGS = "game_ratings"
     GENRES = "genres"
+    IMAGE_DATA = "image_data"
     IMAGES = "images"
     LOCATIONS = "locations"
     OBJECTS = "objects"
@@ -184,7 +185,6 @@ class Resource(StrEnum):
     REGIONS = "regions"
     RELEASES = "releases"
     REVIEWS = "reviews"
-    PROFILE_IMAGES = "profile_images"
     THEMES = "themes"
     TYPES = "types"
     USER_REVIEWS = "user_reviews"
@@ -238,6 +238,30 @@ class Resource(StrEnum):
 
             return
 
+        if self == Resource.IMAGE_DATA:
+            # Split resources into files, organised into folder by thousands
+            resource_dir = os.path.join(target_dir, self.value)
+            for gallery_id in range(1, 1000000):
+                gallery_dir = os.path.join(
+                    resource_dir, str(math.floor(gallery_id / 1000))
+                )
+                resource_file = os.path.join(gallery_dir, f"{gallery_id}.json")
+                if os.path.isfile(resource_file) and skip_existing:
+                    logger.info(
+                        f"Skipping existing resource: {self.value}/{gallery_id}"
+                    )
+                    continue
+
+                if not os.path.isdir(gallery_dir):
+                    logger.debug(f"Creating directory: {gallery_dir}")
+                    os.makedirs(gallery_dir)
+
+                logger.info(f"Downloading {self.value}/{gallery_id}...")
+                data = api.get_image_data(f"1310-{gallery_id}")
+                _save_data(data, resource_file)
+
+            return
+
         if self == Resource.IMAGES:
             logger.info(f"Extracting image resources from: {target_dir}")
             image_resources = set()
@@ -271,30 +295,6 @@ class Resource(StrEnum):
 
                 logger.info(f"Downloading {resource_uri}...")
                 data = api.get_paged_resource(resource_uri, api_key)
-                _save_data(data, resource_file)
-
-            return
-
-        if self == Resource.PROFILE_IMAGES:
-            # Split resources into files, organised into folder by thousands
-            resource_dir = os.path.join(target_dir, self.value)
-            for profile_id in range(1, 1000000):
-                profile_dir = os.path.join(
-                    resource_dir, str(math.floor(profile_id / 1000))
-                )
-                resource_file = os.path.join(profile_dir, f"{profile_id}.json")
-                if os.path.isfile(resource_file) and skip_existing:
-                    logger.info(
-                        f"Skipping existing resource: {self.value}/{profile_id}"
-                    )
-                    continue
-
-                if not os.path.isdir(profile_dir):
-                    logger.debug(f"Creating directory: {profile_dir}")
-                    os.makedirs(profile_dir)
-
-                logger.info(f"Downloading {self.value}/{profile_id}...")
-                data = api.get_image_data(f"1310-{profile_id}")
                 _save_data(data, resource_file)
 
             return
@@ -352,7 +352,7 @@ class Resource(StrEnum):
 
         data = file.load_json_file(resource_file)
 
-        if self == Resource.PROFILE_IMAGES:
+        if self == Resource.IMAGE_DATA:
             logger.fatal("TODO")
 
         if self == Resource.ACCESSORIES:
