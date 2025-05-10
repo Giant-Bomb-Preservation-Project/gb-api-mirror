@@ -2,6 +2,7 @@ from enum import StrEnum
 import math
 import re
 import os
+from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup
 
@@ -173,6 +174,7 @@ class Resource(StrEnum):
     GAMES = "games"
     GAME_RATINGS = "game_ratings"
     GENRES = "genres"
+    IMAGES = "images"
     LOCATIONS = "locations"
     OBJECTS = "objects"
     PEOPLE = "people"
@@ -233,6 +235,43 @@ class Resource(StrEnum):
                 page += 1
 
             _save_data(data, resource_file)
+
+            return
+
+        if self == Resource.IMAGES:
+            logger.info(f"Extracting image resources from: {target_dir}")
+            image_resources = set()
+            filenames = next(os.walk(target_dir), (None, None, []))[2]
+            for filename in filenames:
+                source_file = os.path.join(target_dir, filename)
+                _, ext = os.path.splitext(source_file)
+                if ext != ".json":
+                    continue
+
+                data = file.load_json_file(source_file)
+                if isinstance(data, list):
+                    for item in data:
+                        if "image_tags" in item:
+                            for tag in item["image_tags"]:
+                                url = urlparse(tag["api_detail_url"])
+                                image_resources.add(url.path.rsplit("/")[-2])
+
+            resource_dir = os.path.join(target_dir, self.value)
+            if not os.path.isdir(resource_dir):
+                logger.debug(f"Creating directory: {resource_dir}")
+                os.makedirs(resource_dir)
+
+            for resource_id in image_resources:
+                resource_file = os.path.join(resource_dir, f"{resource_id}.json")
+                resource_uri = f"images/{resource_id}"
+
+                if os.path.isfile(resource_file) and skip_existing:
+                    logger.info(f"Skipping existing resource: {resource_uri}")
+                    continue
+
+                logger.info(f"Downloading {resource_uri}...")
+                data = api.get_paged_resource(resource_uri, api_key)
+                _save_data(data, resource_file)
 
             return
 
