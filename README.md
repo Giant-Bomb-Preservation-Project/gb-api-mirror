@@ -46,6 +46,39 @@ python gb-api-mirror.py <path to save files>
 * `--skip-existing` Skip over resources which have already been downloaded
 * `--verbose` Show verbose output
 
+## Image Files
+
+If the `--download-images` option is passed in the script will attempt to download
+the images associated with each resource. The script does a bunch of URL mapping and
+other changes to download the largest possible version of the image, even if the
+resource has linked to a smaller version.
+
+## Special Resources
+
+Some of the available resources are "special" in the sense that they aren't just
+requests to a paginated endpoint. These include:
+
+### Articles
+
+There is no API endpoint for articles, so this resource is downloaded by scraping
+the actual website. The resulting JSON file is formatted to look vaguely like what
+would come out of an API but could be inconsisten in terms of field naming and such.
+
+### Images
+
+Not to be confused with the image data (below) or image files (above), this is 
+essentially galleries which are attached to the different resources. For example
+screenshots for a game.
+
+We can only determine which images to download once the other resources have been
+downloaded, so leave this for last.
+
+### Image Data
+
+There is no real endpoint to get image data, but there is a JSON endpoint which
+is used by the site's frontend to populate a resource's library when you look
+at it. This is scraped by just incrementing the resource ID from 0 to 1,999,999.
+
 ## Development
 
 The code is type checked with [mypy](https://mypy-lang.org/) and formatted with
