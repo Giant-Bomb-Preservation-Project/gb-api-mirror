@@ -241,7 +241,7 @@ class Resource(StrEnum):
         if self == Resource.IMAGE_DATA:
             # Split resources into files, organised into folder by thousands
             resource_dir = os.path.join(target_dir, self.value)
-            for gallery_id in range(1, 1000000):
+            for gallery_id in range(1, 2000000):
                 gallery_dir = os.path.join(
                     resource_dir, str(math.floor(gallery_id / 1000))
                 )
