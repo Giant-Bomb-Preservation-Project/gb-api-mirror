@@ -347,13 +347,34 @@ class Resource(StrEnum):
 
     def extract_images(self, target_dir: str) -> list[str]:
         """Extract out all the images from the given resource by loading its file."""
-        resource_file = os.path.join(target_dir, f"{self.value}.json")
         images = []
 
-        data = file.load_json_file(resource_file)
+        # Special resource handling
+
+        if self == Resource.IMAGES:
+            resource_dir = os.path.join(target_dir, self.value)
+            logger.debug(f"Getting images from directory: {resource_dir}")
+            files = file.list_files(resource_dir, "json")
+            for file_path in files:
+                for item in file.load_json_file(file_path):
+                    images.append(item[IMAGE_SIZE])
+
+            return list(set(images))
 
         if self == Resource.IMAGE_DATA:
-            logger.fatal("TODO")
+            resource_dir = os.path.join(target_dir, self.value)
+            logger.debug(f"Getting images from directory: {resource_dir}")
+            files = file.list_files(resource_dir, "json")
+            for file_path in files:
+                for item in file.load_json_file(file_path):
+                    images.append(item["original"])
+
+            return list(set(images))
+
+        # Regular resource handling
+
+        resource_file = os.path.join(target_dir, f"{self.value}.json")
+        data = file.load_json_file(resource_file)
 
         if self == Resource.ACCESSORIES:
             images = _extract_images_from_field(data, "image")
